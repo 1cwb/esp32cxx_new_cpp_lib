@@ -26,10 +26,6 @@
 #include "meventhandle.hpp"
 #include "mwifi.hpp"
 
-ESP_EVENT_DEFINE_BASE(LED_EVENT_BASE);
-#define LED_EVENT_ON  (1)
-#define LED_EVENT_OFF (2)
-
 extern "C" void app_main(void)
 {
     uint32_t red = 0;
