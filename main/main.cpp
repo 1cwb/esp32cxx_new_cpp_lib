@@ -25,15 +25,11 @@
 #include "mevent.hpp"
 #include "meventhandle.hpp"
 #include "mwifi.hpp"
+#include "mespnow.hpp"
 
+#if 0 //smart config
 extern "C" void app_main(void)
 {
-    uint32_t red = 0;
-    uint32_t green = 0;
-    uint32_t blue = 0;
-    uint16_t hue = 0;
-    uint16_t start_rgb = 0;
-
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -86,5 +82,34 @@ extern "C" void app_main(void)
     while (1)
     {
        vTaskDelay(pdMS_TO_TICKS(20));
+    }
+}
+#endif
+
+extern "C" void app_main(void)
+{
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK( ret );
+    uint32_t p = 123;
+    LedStrip ledStrip;
+    ledStrip.init(GPIO_NUM_8);
+    MespNowDataParse* espnowData = new MespNowDataParse;
+    MEspNow* pEspNow = MEspNow::getInstance();
+    pEspNow->wifiinit();
+    pEspNow->espNowInit();
+    pEspNow->sendBroadCastToGetAllDevice((const uint8_t*)&p, 4);
+    espnowData->setDataParseRecvCb([&](stMespNowEventRecv* recv, bool isbroadCast){
+        printf("recv data len: %d, isbroadCast = %d data = %lu\r\n", recv->dataLen, isbroadCast, *(uint32_t*)recv->data);
+    });
+
+    while (1)
+    {
+        p++;
+        pEspNow->sendBroadCastToGetAllDevice((const uint8_t*)&p, 4);
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

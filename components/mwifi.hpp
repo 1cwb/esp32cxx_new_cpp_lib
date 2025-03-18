@@ -48,6 +48,26 @@ public:
         }
         return true;
     }
+    bool setChannel(uint8_t primary, wifi_second_chan_t secondary = WIFI_SECOND_CHAN_NONE)
+    {
+        esp_err_t err = esp_wifi_set_channel(primary, secondary);
+        if(err!= ESP_OK)
+        {
+            printf("Error: %s()%d %s\n",__FUNCTION__,__LINE__,esp_err_to_name(err));
+            return false;
+        }
+        return true;
+    }
+    bool getChannel(uint8_t *primary, wifi_second_chan_t *second)
+    {
+        esp_err_t err = esp_wifi_get_channel(primary, second);
+        if(err!= ESP_OK)
+        {
+            printf("Error: %s()%d %s\n",__FUNCTION__,__LINE__,esp_err_to_name(err));
+            return false;
+        }
+        return true;
+    }
     virtual void onEvent(uint32_t eventId, uint8_t* data ,uint32_t dataLen) override
     {
         stMeventInfo* wifiEvent = reinterpret_cast<stMeventInfo*>(data);
