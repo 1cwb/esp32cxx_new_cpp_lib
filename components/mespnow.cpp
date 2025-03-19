@@ -131,6 +131,7 @@ bool MEspNow::espNowInit()
 
         evt->id = E_ESP_NOW_EVENT_RECV;
         memcpy(precv->macAddr, espNowInfo->src_addr, ESP_NOW_ETH_ALEN);
+        memcpy(precv->desMacAddr, espNowInfo->des_addr, ESP_NOW_ETH_ALEN);
         precv->dataLen = data_len;
         precv->data = static_cast<uint8_t*>(malloc(data_len));
         if(precv->data == nullptr)
@@ -296,7 +297,7 @@ bool MEspNow::espSendToAllPrivateData(const uint8_t *data, size_t len)
     {
         if(it)
         {
-            if(isBroadCast(it, ESP_NOW_ETH_ALEN))
+            if(isBroadCast(it))
             {
                 continue;
             }
@@ -310,24 +311,18 @@ bool MEspNow::espSendToAllPrivateData(const uint8_t *data, size_t len)
 }
 bool MEspNow::sendBroadCastToGetAllDevice(const uint8_t *data, size_t len)
 {
-    if(len > 250 - ESP_NOW_ETH_ALEN)
-    {
-        len = 250 - ESP_NOW_ETH_ALEN;
-    }
-    size_t newLen = len + ESP_NOW_ETH_ALEN;
-    uint8_t* buffer = static_cast<uint8_t*>(malloc(newLen));
+    uint8_t* buffer = static_cast<uint8_t*>(malloc(len));
     if(buffer == nullptr)
     {
         printf("Error: malloc fail\n");
         return false;
     }
-    memset(buffer, 0, newLen);
-    memcpy(buffer, broadCastMac_, ESP_NOW_ETH_ALEN);
+    memset(buffer, 0, len);
     if(data != nullptr && len > 0)
     {
-        memcpy(&buffer[ESP_NOW_ETH_ALEN] , data, len);
+        memcpy(buffer , data, len);
     }
-    if(!espSendToPrivateData(broadCastMac_, buffer, newLen))
+    if(!espSendToPrivateData(broadCastMac_, buffer, len))
     {
         printf("Error : send Broad Cast Info Fail\n");
         free(buffer);
@@ -336,12 +331,8 @@ bool MEspNow::sendBroadCastToGetAllDevice(const uint8_t *data, size_t len)
     free(buffer);
     return true;
 }
-bool MEspNow::isBroadCast(const uint8_t* data, uint8_t len)
+bool MEspNow::isBroadCast(const uint8_t* data)
 {
-    if(len < ESP_NOW_ETH_ALEN)
-    {
-        return false;
-    }
     if(data)
     {
         return (memcmp(broadCastMac_, data, ESP_NOW_ETH_ALEN) == 0);

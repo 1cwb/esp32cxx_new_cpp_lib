@@ -13,7 +13,7 @@
     "idf.openOcdConfigs": [
         "board/esp32c6-builtin.cfg"
     ],
-    "idf.portWin": "COM15",
+    "idf.portWin": "COM16",
     "files.associations": {
         "iosfwd": "cpp",
         "atomic": "cpp",

@@ -94,22 +94,22 @@ extern "C" void app_main(void)
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK( ret );
-    uint32_t p = 123;
+    uint8_t p[1200] = {65};
+    memset(p, 65, sizeof(p));
     LedStrip ledStrip;
     ledStrip.init(GPIO_NUM_8);
     MespNowDataParse* espnowData = new MespNowDataParse;
     MEspNow* pEspNow = MEspNow::getInstance();
     pEspNow->wifiinit();
     pEspNow->espNowInit();
-    pEspNow->sendBroadCastToGetAllDevice((const uint8_t*)&p, 4);
+    //pEspNow->sendBroadCastToGetAllDevice(p, 1024);
     espnowData->setDataParseRecvCb([&](stMespNowEventRecv* recv, bool isbroadCast){
-        printf("recv data len: %d, isbroadCast = %d data = %lu\r\n", recv->dataLen, isbroadCast, *(uint32_t*)recv->data);
+        printf("recv data len: %d, isbroadCast = %d\r\n", recv->dataLen, isbroadCast);
     });
-
+    vTaskDelay(pdMS_TO_TICKS(3000));
     while (1)
     {
-        p++;
-        pEspNow->sendBroadCastToGetAllDevice((const uint8_t*)&p, 4);
-        vTaskDelay(pdMS_TO_TICKS(100));
+        pEspNow->sendBroadCastToGetAllDevice(p, sizeof(p));
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }

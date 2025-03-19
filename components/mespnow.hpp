@@ -19,6 +19,7 @@ struct stMespNowEventSend
 struct stMespNowEventRecv
 {
     uint8_t macAddr[ESP_NOW_ETH_ALEN];
+    uint8_t desMacAddr[ESP_NOW_ETH_ALEN];
     uint16_t dataLen;
     uint8_t* data;
 };
@@ -57,7 +58,7 @@ public:
     bool espSendToPrivateData(const uint8_t *peer_addr, const uint8_t *data, size_t len);
     bool espSendToAllPrivateData(const uint8_t *data, size_t len);
     bool sendBroadCastToGetAllDevice(const uint8_t *data, size_t len);
-    static bool isBroadCast(const uint8_t* data, uint8_t len);
+    static bool isBroadCast(const uint8_t* data);
 private:
     MEspNow() : CONFIG_ESPNOW_PMK("pmk1234567890123")
     {
@@ -130,7 +131,7 @@ public:
                 {
                     if(sendCb_ && *sendCb_)
                     {
-                        bisBroadCast = MEspNow::isBroadCast(evt->info.send.macAddr, sizeof(evt->info.send.macAddr));
+                        bisBroadCast = MEspNow::isBroadCast(evt->info.send.macAddr);
                         (*sendCb_)(&evt->info.send, bisBroadCast);
                     }
                     break;
@@ -145,12 +146,7 @@ public:
                     }
                     if(recvCb_ && *recvCb_)
                     {
-                        bisBroadCast = MEspNow::isBroadCast(evt->info.recv.data, evt->info.recv.dataLen);
-                        if(bisBroadCast)
-                        {
-                            evtTemp.info.recv.data += ESP_NOW_ETH_ALEN;
-                            evtTemp.info.recv.dataLen -= ESP_NOW_ETH_ALEN;
-                        }
+                        bisBroadCast = MEspNow::isBroadCast(evt->info.recv.desMacAddr);
                         (*recvCb_)(&evtTemp.info.recv, bisBroadCast);
                     }
                     break;
