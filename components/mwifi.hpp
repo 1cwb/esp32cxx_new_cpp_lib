@@ -85,9 +85,15 @@ public:
     {
         wifiEventNotifyCb_ = cb;
     }
-protected:
+
     bool getMac(wifi_interface_t ifx, uint8_t mac[6]);
     bool setMac(wifi_interface_t ifx, const uint8_t mac[6]);
+    wifi_interface_t getIfx()
+    {
+        wifi_mode_t mode;
+        getMode(&mode);
+        return mode == WIFI_MODE_STA ? WIFI_IF_STA : WIFI_IF_AP;
+    }
 protected:
     static const uint8_t ESP_WIFI_INIT_SUCCESS = BIT(0);
     static const uint8_t ESP_WIFI_NETIF_INIT_SUCCESS = BIT(1);

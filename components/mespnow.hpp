@@ -59,6 +59,7 @@ public:
     bool espSendToAllPrivateData(const uint8_t *data, size_t len);
     bool sendBroadCastToGetAllDevice(const uint8_t *data, size_t len);
     static bool isBroadCast(const uint8_t* data);
+    static const uint8_t* getBroadCastMac() {return broadCastMac_;}
 private:
     MEspNow() : CONFIG_ESPNOW_PMK("pmk1234567890123")
     {

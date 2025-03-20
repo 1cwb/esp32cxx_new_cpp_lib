@@ -102,14 +102,40 @@ extern "C" void app_main(void)
     MEspNow* pEspNow = MEspNow::getInstance();
     pEspNow->wifiinit();
     pEspNow->espNowInit();
-    //pEspNow->sendBroadCastToGetAllDevice(p, 1024);
+    pEspNow->sendBroadCastToGetAllDevice(pEspNow->getBroadCastMac(), ESP_NOW_ETH_ALEN);
     espnowData->setDataParseRecvCb([&](stMespNowEventRecv* recv, bool isbroadCast){
-        printf("recv data len: %d, isbroadCast = %d\r\n", recv->dataLen, isbroadCast);
+        if(isbroadCast)
+        {
+            printf("recv broadCast data, len: %d\n", recv->dataLen);
+            if(!pEspNow->espNowIsPeerExist(recv->macAddr))
+            {
+                pEspNow->addPeer(recv->macAddr);
+                pEspNow->sendBroadCastToGetAllDevice(pEspNow->getBroadCastMac(), ESP_NOW_ETH_ALEN);
+                ledStrip.setLedColorHSV(HUE_GREEN, 100, 100);
+            }
+            else
+            {
+                printf("already add peer, nodify it\n");
+                pEspNow->addPeer(recv->macAddr);
+                ledStrip.setLedColorHSV(HUE_GREEN, 100, 100);
+                uint8_t macaddr[6];
+                pEspNow->getMac(pEspNow->getIfx(), macaddr);
+                pEspNow->espSendToPrivateData(recv->macAddr, macaddr, sizeof(macaddr));
+            }
+        }
+        else
+        {
+            if(recv->dataLen == ESP_NOW_ETH_ALEN && memcmp(recv->macAddr, recv->data, ESP_NOW_ETH_ALEN) == 0)
+            {
+                printf("recv private data, len: %d\n", recv->dataLen);
+                pEspNow->addPeer(recv->macAddr);
+                ledStrip.setLedColorHSV(HUE_GREEN, 100, 100);
+            }
+        }
     });
-    vTaskDelay(pdMS_TO_TICKS(3000));
+    ledStrip.setLedColorHSV(HUE_RED, 100, 100);
     while (1)
     {
-        pEspNow->sendBroadCastToGetAllDevice(p, sizeof(p));
         vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
