@@ -5,9 +5,9 @@
 
 class MUart
 {
-    using UartEventCallBack = std::function<void(uart_event_t*)>;
+    using UartEventCallBack = std::function<void(void*, size_t)>;
 public:
-    MUart(uart_port_t uartNum = UART_NUM_1, int32_t baudrate = 2000000, uart_word_length_t dataBits = UART_DATA_8_BITS,
+    MUart(uart_port_t uartNum = UART_NUM_1, int32_t baudrate = 921600, uart_word_length_t dataBits = UART_DATA_8_BITS,
         uart_parity_t parity = UART_PARITY_DISABLE, uart_stop_bits_t stopBits = UART_STOP_BITS_1,
         uart_hw_flowcontrol_t flowCtrl = UART_HW_FLOWCTRL_DISABLE);
     ~MUart();

@@ -79,7 +79,7 @@ bool MUart::init(int32_t txdPinNum, int32_t rxdPinNum, int32_t rxbufSize, int32_
                         recvData(dtmp, event.size, portMAX_DELAY);
                         if(cb_ && *cb_)
                         {
-                            (*cb_)(&event);
+                            (*cb_)(dtmp, event.size);
                         }
                         break;
                     //Event of HW FIFO overflow detected

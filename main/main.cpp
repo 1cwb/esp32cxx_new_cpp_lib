@@ -85,7 +85,7 @@ extern "C" void app_main(void)
     }
 }
 #endif
-
+#if 0
 extern "C" void app_main(void)
 {
     esp_err_t ret = nvs_flash_init();
@@ -137,5 +137,70 @@ extern "C" void app_main(void)
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(2000));
+    }
+}
+#endif
+
+extern "C" void app_main(void)
+{
+    MLed led0(12);
+    MLed led1(13);
+    led0.OFF();
+    led1.OFF();
+    MUart uart1;
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    MespNowDataParse* espnowData = new MespNowDataParse;
+    MEspNow* pEspNow = MEspNow::getInstance();
+    pEspNow->wifiinit();
+    pEspNow->espNowInit();
+
+    uart1.init(GPIO_NUM_0,GPIO_NUM_1);
+    uart1.registerEventCallback([&](void* data, size_t size){
+        pEspNow->espSendToAllPrivateData((const uint8_t*)data, size);
+    });
+
+    espnowData->setDataParseRecvCb([&](stMespNowEventRecv* recv, bool isbroadCast){
+        if(isbroadCast)
+        {
+            printf("recv broadCast data, len: %d\n", recv->dataLen);
+            if(!pEspNow->espNowIsPeerExist(recv->macAddr))
+            {
+                pEspNow->addPeer(recv->macAddr);
+                pEspNow->sendBroadCastToGetAllDevice(pEspNow->getBroadCastMac(), ESP_NOW_ETH_ALEN);
+                led0.ON();
+            }
+            else
+            {
+                printf("already add peer, nodify it\n");
+                pEspNow->addPeer(recv->macAddr);
+                led0.ON();
+                uint8_t macaddr[6];
+                pEspNow->getMac(pEspNow->getIfx(), macaddr);
+                pEspNow->espSendToPrivateData(recv->macAddr, macaddr, sizeof(macaddr));
+            }
+        }
+        else
+        {
+            if(recv->dataLen == ESP_NOW_ETH_ALEN && memcmp(recv->macAddr, recv->data, ESP_NOW_ETH_ALEN) == 0)
+            {
+                printf("recv private data, len: %d\n", recv->dataLen);
+                pEspNow->addPeer(recv->macAddr);
+                led0.ON();
+            }
+            else
+            {
+                uart1.sendData((char*)recv->data, recv->dataLen);
+                led1.toggle();
+            }
+        }
+    });
+    pEspNow->sendBroadCastToGetAllDevice(pEspNow->getBroadCastMac(), ESP_NOW_ETH_ALEN);
+    while (true) {
+        
+        vTaskDelay(100);
     }
 }
