@@ -13,6 +13,7 @@ struct stMeventInfo
     int32_t eventId;
     void* eventHandlerArg;
     esp_event_handler_instance_t context;
+
     stMeventInfo(esp_event_base_t base = nullptr, int32_t id = 0, void* arg = nullptr, esp_event_handler_instance_t ctx = nullptr)
         : eventBase(base), eventId(id), eventHandlerArg(arg), context(ctx) {}
 };

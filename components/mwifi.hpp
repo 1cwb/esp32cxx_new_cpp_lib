@@ -16,6 +16,7 @@
 #include "esp_crc.h"
 #include "esp_random.h"
 #include "esp_smartconfig.h"
+#include "esp_event_base.h"
 #include "meventhandle.hpp"
 #include "mevent.hpp"
 
@@ -224,8 +225,6 @@ public:
     bool startAp();
     bool stopAp();
     bool deinit();
-    bool wifiEventRegister(esp_event_handler_t event_handler);
-    bool wifiEventUnregister();
     bool getMac(uint8_t mac[6])
     {
         return MWifiBase::getMac(WIFI_IF_AP, mac);

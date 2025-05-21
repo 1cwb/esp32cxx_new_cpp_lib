@@ -74,15 +74,15 @@ public:
     }
     QueueHandle_t getQueueHandle() const
     {
-        return mespnowQueue_;
+        return eventHandleQueue_;
     }
     bool registerClient(eventClient*client);
     void unregisterClient(eventClient*client);
 private:
     MeventHandler()
     {
-        mespnowQueue_ = xQueueCreate(ESPNOW_QUEUE_SIZE, sizeof(stMsgData));
-        if (mespnowQueue_ == nullptr)
+        eventHandleQueue_ = xQueueCreate(EVENT_HANDLE_QUEUE_SIZE, sizeof(stMsgData));
+        if (eventHandleQueue_ == nullptr)
         {
             printf("Error: Create mutex fail!\n");
         }
@@ -91,12 +91,12 @@ private:
     }
     ~MeventHandler()
     {
-        vQueueDelete(mespnowQueue_);
+        vQueueDelete(eventHandleQueue_);
     }
     void onHandler();
 private:
-    static const int ESPNOW_QUEUE_SIZE = 50;
-    QueueHandle_t mespnowQueue_;
+    static const int EVENT_HANDLE_QUEUE_SIZE = 50;
+    QueueHandle_t eventHandleQueue_;
     std::list<eventClient*> eventClientList_;
     std::mutex lock_;
 };

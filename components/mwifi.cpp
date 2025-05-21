@@ -88,6 +88,30 @@ bool MWifiBase::init()
 
             wifiEvent->eventHandlerArg =  reinterpret_cast<wifi_config_t*>(wifiConfig);
         }
+        else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_AP_STACONNECTED)
+        {
+            wifiEvent->eventHandlerArg = malloc(sizeof(wifi_event_ap_staconnected_t));
+            if(!wifiEvent->eventHandlerArg)
+            {
+                delete(wifiEvent);
+                wifiEvent = nullptr;
+                printf("Error: malloc wifi_event_ap_staconnected_t fail\n");
+                return;
+            }
+            memcpy(wifiEvent->eventHandlerArg, event_data, sizeof(wifi_event_ap_staconnected_t));
+        }
+        else if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_AP_STADISCONNECTED)
+        {
+            wifiEvent->eventHandlerArg = malloc(sizeof(wifi_event_ap_stadisconnected_t));
+            if(!wifiEvent->eventHandlerArg)
+            {
+                delete(wifiEvent);
+                wifiEvent = nullptr;
+                printf("Error: malloc wifi_event_ap_stadisconnected_t fail\n");
+                return;
+            }
+            memcpy(wifiEvent->eventHandlerArg, event_data, sizeof(wifi_event_ap_stadisconnected_t));
+        }
         msg.eventId = E_EVENT_ID_ESP_WIFI;
         msg.data = reinterpret_cast<uint8_t*>(wifiEvent);
         msg.dataLen = sizeof(stMeventInfo);
@@ -111,7 +135,7 @@ bool MWifiBase::init()
                                                         ESP_EVENT_ANY_ID,
                                                         wifiEventHandleCb_);
     MEvent::getInstance()->registerEventHandlerInstance(IP_EVENT,
-                                                        IP_EVENT_STA_GOT_IP,
+                                                        ESP_EVENT_ANY_ID,
                                                         wifiEventHandleCb_);
     MEvent::getInstance()->registerEventHandlerInstance(SC_EVENT,
                                                         ESP_EVENT_ANY_ID,
@@ -122,7 +146,7 @@ bool MWifiBase::deinit()
 {
     esp_err_t err = ESP_OK;
     MEvent::getInstance()->unregisterEventHandlerInstance(WIFI_EVENT, ESP_EVENT_ANY_ID);
-    MEvent::getInstance()->unregisterEventHandlerInstance(IP_EVENT, IP_EVENT_STA_GOT_IP);
+    MEvent::getInstance()->unregisterEventHandlerInstance(IP_EVENT, ESP_EVENT_ANY_ID);
     MEvent::getInstance()->unregisterEventHandlerInstance(SC_EVENT, ESP_EVENT_ANY_ID);
     if(initStatus_ & ESP_WIFI_NETIF_INIT_SUCCESS)
     {
@@ -387,26 +411,6 @@ bool MWifiAP::deinit()
     if(apNetif_)
     {
         esp_netif_destroy_default_wifi(apNetif_);
-    }
-    return true;
-}
-bool MWifiAP::wifiEventRegister(esp_event_handler_t event_handler)
-{
-    esp_err_t err = esp_event_handler_instance_register(WIFI_EVENT,ESP_EVENT_ANY_ID, event_handler, nullptr, nullptr);
-    if(err != ESP_OK)
-    {
-        printf("Error: %s()%d %s\n",__FUNCTION__,__LINE__,esp_err_to_name(err));
-        return false;
-    }
-    return true;
-}
-bool MWifiAP::wifiEventUnregister()
-{
-    esp_err_t err = esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, nullptr);
-    if(err != ESP_OK)
-    {
-        printf("Error: %s()%d %s\n",__FUNCTION__,__LINE__,esp_err_to_name(err));
-        return false;
     }
     return true;
 }

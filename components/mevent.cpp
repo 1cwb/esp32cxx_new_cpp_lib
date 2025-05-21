@@ -8,13 +8,13 @@ bool MEvent::registerEventHandlerInstance(esp_event_base_t eventBase,
     esp_err_t err = esp_event_handler_instance_register(eventBase, eventId, eventHandlerWrapper, eventHandlerArg, &context);
     if(err != ESP_OK)
     {
-    delete eventHandlerArg;
-    printf("Error: %s()%d %s\n",__FUNCTION__,__LINE__,esp_err_to_name(err));
-    return false;
+        delete eventHandlerArg;
+        printf("Error: %s()%d %s\n",__FUNCTION__,__LINE__,esp_err_to_name(err));
+        return false;
     }
 
     std::lock_guard<std::mutex> lock(mutex_);
-    handlers_.push_back(stMeventInfo(eventBase, eventId, eventHandlerArg, context));
+    handlers_.emplace_back(stMeventInfo(eventBase, eventId, eventHandlerArg, context));
     return true;
 }
 bool MEvent::unregisterEventHandlerInstance(esp_event_base_t eventBase, int32_t eventId)

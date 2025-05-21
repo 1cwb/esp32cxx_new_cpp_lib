@@ -42,7 +42,7 @@ void MeventHandler::onHandler()
     printf("eventHandler Run...\n");
     while(true)
     {
-        if(xQueueReceive(mespnowQueue_, &msg, portMAX_DELAY) == pdTRUE)
+        if(xQueueReceive(eventHandleQueue_, &msg, portMAX_DELAY) == pdTRUE)
         {
             std::lock_guard<std::mutex> lock(lock_);
             for(auto& c : eventClientList_)
